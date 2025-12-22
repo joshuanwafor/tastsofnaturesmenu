@@ -1,6 +1,7 @@
-function formatPrice(price: number): string {
-  return `₦${price.toLocaleString('en-NG')}`;
-}
+'use client';
+
+import { useCart } from './contexts/CartContext';
+import { formatPrice } from './utils/format';
 
 const solsticeMenuItems = {
   appetizers: [
@@ -65,7 +66,13 @@ const solsticeMenuItems = {
   ],
 };
 
+function generateId(name: string): string {
+  return name.toLowerCase().replace(/\s+/g, '-');
+}
+
 export default function Home() {
+  const { addToCart } = useCart();
+
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Sleek Header */}
@@ -110,7 +117,17 @@ export default function Home() {
               >
                 <div className="flex flex-col justify-between h-full">
                   <h4 className="text-xl font-light text-white mb-4 tracking-tight leading-tight">{item.name}</h4>
-                  <p className="text-xl font-extralight text-white/80">{formatPrice(item.price)}</p>
+                  <p className="text-xl font-extralight text-white/80 mb-4">{formatPrice(item.price)}</p>
+                  <button
+                    onClick={() => addToCart({
+                      id: generateId(item.name),
+                      name: item.name,
+                      price: item.price,
+                    })}
+                    className="w-full border border-white/20 py-2 text-sm font-light hover:border-white/40 hover:bg-white/5 transition-all duration-300"
+                  >
+                    Add to Cart
+                  </button>
                 </div>
                 <div className="absolute bottom-0 left-0 w-0 h-px bg-white/20 group-hover:w-full transition-all duration-500"></div>
               </div>
@@ -136,8 +153,19 @@ export default function Home() {
                   <p className="text-xl font-extralight text-white/80 whitespace-nowrap">{formatPrice(item.price)}</p>
                 </div>
                 {item.description && (
-                  <p className="text-sm text-gray-400/80 leading-relaxed font-light tracking-wide mt-6">{item.description}</p>
+                  <p className="text-sm text-gray-400/80 leading-relaxed font-light tracking-wide mt-6 mb-6">{item.description}</p>
                 )}
+                <button
+                  onClick={() => addToCart({
+                    id: generateId(item.name),
+                    name: item.name,
+                    price: item.price,
+                    description: item.description,
+                  })}
+                  className="w-full border border-white/20 py-2 text-sm font-light hover:border-white/40 hover:bg-white/5 transition-all duration-300"
+                >
+                  Add to Cart
+                </button>
                 <div className="absolute bottom-0 left-0 w-0 h-px bg-white/20 group-hover:w-full transition-all duration-500"></div>
               </div>
             ))}
@@ -162,8 +190,19 @@ export default function Home() {
                   <p className="text-2xl font-extralight text-white/80 whitespace-nowrap">{formatPrice(item.price)}</p>
                 </div>
                 {item.description && (
-                  <p className="text-base text-gray-300/70 leading-relaxed font-light tracking-wide max-w-2xl">{item.description}</p>
+                  <p className="text-base text-gray-300/70 leading-relaxed font-light tracking-wide max-w-2xl mb-6">{item.description}</p>
                 )}
+                <button
+                  onClick={() => addToCart({
+                    id: generateId(item.name),
+                    name: item.name,
+                    price: item.price,
+                    description: item.description,
+                  })}
+                  className="border border-white/20 px-8 py-3 font-light hover:border-white/40 hover:bg-white/5 transition-all duration-300"
+                >
+                  Add to Cart
+                </button>
                 <div className="absolute bottom-0 left-0 w-0 h-px bg-white/20 group-hover:w-full transition-all duration-700"></div>
               </div>
             ))}
@@ -185,7 +224,17 @@ export default function Home() {
               >
                 <div className="flex flex-col justify-between h-full">
                   <h4 className="text-xl font-light text-white mb-4 tracking-tight leading-tight">{item.name}</h4>
-                  <p className="text-xl font-extralight text-white/80">{formatPrice(item.price)}</p>
+                  <p className="text-xl font-extralight text-white/80 mb-4">{formatPrice(item.price)}</p>
+                  <button
+                    onClick={() => addToCart({
+                      id: generateId(item.name),
+                      name: item.name,
+                      price: item.price,
+                    })}
+                    className="w-full border border-white/20 py-2 text-sm font-light hover:border-white/40 hover:bg-white/5 transition-all duration-300"
+                  >
+                    Add to Cart
+                  </button>
                 </div>
                 <div className="absolute bottom-0 left-0 w-0 h-px bg-white/20 group-hover:w-full transition-all duration-500"></div>
               </div>
