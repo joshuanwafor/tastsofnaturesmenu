@@ -14,6 +14,8 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+
+
 export const metadata: Metadata = {
   title: "Nature's Crunch & Burst | Solstice Menu",
   description: "Nature's Crunch & Burst - Solstice Menu. Special seasonal offerings in Jos, Nigeria.",
