@@ -6,6 +6,8 @@ import { formatPrice } from '../utils/format';
 import { useRouter } from 'next/navigation';
 import { useCreateInvoice } from '../hooks/useCreateInvoice';
 
+const MINIMUM_SPEND = 150000; // ₦150,000
+
 interface PaystackPop {
   setup(options: {
     key: string;
@@ -33,19 +35,45 @@ declare global {
   }
 }
 
+// Generate available time slots
+const generateTimeSlots = () => {
+  const slots = [];
+  const startHour = 19; // 7 PM
+  const endHour = 3; // 3 AM next day
+  
+  for (let hour = startHour; hour < 24; hour++) {
+    slots.push(`${hour}:00`, `${hour}:30`);
+  }
+  for (let hour = 0; hour <= endHour; hour++) {
+    slots.push(`${hour}:00`, `${hour}:30`);
+  }
+  return slots;
+};
+
 export default function CheckoutPage() {
   const { items, getTotal, clearCart } = useCart();
   const router = useRouter();
   const { createInvoice, loading: invoiceLoading } = useCreateInvoice();
   const [loading, setLoading] = useState(false);
   const [paystackReady, setPaystackReady] = useState(false);
+  const [selectedTime, setSelectedTime] = useState<string>('');
+  const timeSlots = generateTimeSlots();
+  
   const [formData, setFormData] = useState({
     email: '',
     firstName: '',
     lastName: '',
     phone: '',
-    address: '',
+    partySize: 2,
+    date: '',
+    time: '',
   });
+
+  // Get minimum date (today)
+  const getMinDate = () => {
+    const today = new Date();
+    return today.toISOString().split('T')[0];
+  };
 
   useEffect(() => {
     // Check if Paystack is already loaded
@@ -60,7 +88,6 @@ export default function CheckoutPage() {
     script.async = true;
     
     script.onload = () => {
-      // Wait a bit for PaystackPop to be available
       const checkPaystack = setInterval(() => {
         if (window.PaystackPop) {
           setPaystackReady(true);
@@ -68,7 +95,6 @@ export default function CheckoutPage() {
         }
       }, 100);
 
-      // Timeout after 5 seconds
       setTimeout(() => {
         clearInterval(checkPaystack);
         if (!window.PaystackPop) {
@@ -84,7 +110,6 @@ export default function CheckoutPage() {
     document.body.appendChild(script);
 
     return () => {
-      // Only remove if it exists
       if (document.body.contains(script)) {
         document.body.removeChild(script);
       }
@@ -99,6 +124,11 @@ export default function CheckoutPage() {
       return;
     }
 
+    if (getTotal() < MINIMUM_SPEND) {
+      alert(`Minimum spend of ${formatPrice(MINIMUM_SPEND)} required for checkout. Please add more items to your cart.`);
+      return;
+    }
+
     if (!paystackReady || !window.PaystackPop) {
       alert('Payment system is still loading. Please wait a moment and try again.');
       return;
@@ -107,8 +137,6 @@ export default function CheckoutPage() {
     setLoading(true);
 
     try {
-      // In production, you would call your backend API to initialize the payment
-      // For now, we'll use a test public key
       const publicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || 'pk_test_...';
 
       if (!publicKey || publicKey === 'pk_test_...') {
@@ -120,7 +148,7 @@ export default function CheckoutPage() {
       const handler = window.PaystackPop!.setup({
         key: publicKey,
         email: formData.email,
-        amount: getTotal() * 100, // Paystack expects amount in kobo
+        amount: getTotal() * 100,
         currency: 'NGN',
         ref: `ref_${Date.now()}`,
         metadata: {
@@ -141,62 +169,61 @@ export default function CheckoutPage() {
               value: formData.phone,
             },
             {
-              display_name: 'Address',
-              variable_name: 'address',
-              value: formData.address,
+              display_name: 'Party Size',
+              variable_name: 'party_size',
+              value: formData.partySize.toString(),
+            },
+            {
+              display_name: 'Reservation Date',
+              variable_name: 'reservation_date',
+              value: formData.date,
+            },
+            {
+              display_name: 'Reservation Time',
+              variable_name: 'reservation_time',
+              value: formData.time,
             },
           ],
         },
         callback: function (response: any) {
-          // Payment successful - create invoice in shopkeeperpos
           const customerName = `${formData.firstName} ${formData.lastName}`.trim() || 'Customer';
           
-          // Handle async invoice creation
           createInvoice({
             items,
             customerName,
             customerEmail: formData.email,
             customerPhone: formData.phone,
-            deliveryAddress: formData.address,
+            deliveryAddress: `Reservation: ${formData.partySize} guests on ${formData.date} at ${formData.time}`,
             paymentReference: response.reference,
             paymentMethod: 'card',
+            reservationDate: formData.date,
+            reservationTime: formData.time,
+            partySize: formData.partySize,
           }).then((invoiceResult) => {
             if (invoiceResult.success) {
               console.log('Invoice created successfully:', invoiceResult.invoiceReference);
               clearCart();
               router.push('/success');
             } else {
-              // Payment succeeded but invoice creation failed
               console.error('Invoice creation failed:', invoiceResult.error);
-              
-              // If it's a configuration error, log it but don't show alert to user
-              // Payment was successful, so we proceed normally
               if (invoiceResult.error?.includes('not configured')) {
                 console.warn('Invoice creation skipped - credentials not configured. Payment was successful.');
               } else {
-                // For other errors, show a less alarming message
                 console.warn('Invoice creation had an issue, but payment was successful.');
               }
-              
               clearCart();
               router.push('/success');
             }
           }).catch((error) => {
-            // Payment succeeded but invoice creation had an error
             console.error('Error creating invoice:', error);
-            
-            // Don't block the user flow - payment was successful
-            // Just log the error for debugging
             if (error.message?.includes('not configured')) {
               console.warn('Invoice creation skipped - credentials not configured. Payment was successful.');
             }
-            
             clearCart();
             router.push('/success');
           });
         },
         onClose: function () {
-          // User closed the payment modal
           setLoading(false);
           alert('Payment cancelled');
         },
@@ -210,11 +237,19 @@ export default function CheckoutPage() {
     }
   };
 
+  const formatTimeDisplay = (time: string) => {
+    const [hours, minutes] = time.split(':');
+    const hour24 = parseInt(hours);
+    const hour12 = hour24 === 0 ? 12 : hour24 > 12 ? hour24 - 12 : hour24;
+    const ampm = hour24 >= 12 ? 'PM' : 'AM';
+    return `${hour12}:${minutes} ${ampm}`;
+  };
+
   if (items.length === 0) {
     return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+      <div className="min-h-screen bg-black text-white flex items-center justify-center px-4">
         <div className="text-center">
-          <h1 className="text-3xl font-light mb-4">Your cart is empty</h1>
+          <h1 className="text-2xl sm:text-3xl font-light mb-4">Your cart is empty</h1>
           <button
             onClick={() => router.push('/')}
             className="border border-white/20 px-8 py-3 font-light hover:border-white/40 transition-colors"
@@ -226,12 +261,24 @@ export default function CheckoutPage() {
     );
   }
 
+  const isMinimumMet = getTotal() >= MINIMUM_SPEND;
+  const remaining = MINIMUM_SPEND - getTotal();
+
   return (
     <div className="min-h-screen bg-black text-white">
-      <div className="max-w-4xl mx-auto px-6 lg:px-8 py-20">
-        <h1 className="text-4xl font-extralight mb-12 text-center">Checkout</h1>
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-20">
+        <h1 className="text-3xl sm:text-4xl font-extralight mb-8 sm:mb-12 text-center">Checkout</h1>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        {/* Minimum Spend Warning */}
+        {!isMinimumMet && (
+          <div className="mb-6 p-4 bg-amber-900/20 border border-amber-800/50 text-amber-200 text-center">
+            <p className="text-sm font-light">
+              Minimum spend of {formatPrice(MINIMUM_SPEND)} required. Add {formatPrice(remaining)} more to checkout.
+            </p>
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12">
           {/* Order Summary */}
           <div>
             <h2 className="text-xl font-light mb-6 border-b border-white/10 pb-4">
@@ -255,16 +302,21 @@ export default function CheckoutPage() {
                 </div>
               ))}
             </div>
-            <div className="flex justify-between items-center pt-4 border-t border-white/10">
+            <div className="flex justify-between items-center pt-4 border-t border-white/10 mb-4">
               <span className="text-xl font-light">Total</span>
               <span className="text-2xl font-light">{formatPrice(getTotal())}</span>
             </div>
+            {!isMinimumMet && (
+              <div className="text-sm text-amber-200/60 font-light text-center">
+                {formatPrice(remaining)} remaining to reach minimum
+              </div>
+            )}
           </div>
 
           {/* Checkout Form */}
           <div>
             <h2 className="text-xl font-light mb-6 border-b border-white/10 pb-4">
-              Delivery Information
+              Reservation Details
             </h2>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
@@ -332,24 +384,79 @@ export default function CheckoutPage() {
                 />
               </div>
 
-              <div>
-                <label className="block text-sm text-white/60 mb-2 font-light">
-                  Delivery Address *
-                </label>
-                <textarea
-                  required
-                  value={formData.address}
-                  onChange={(e) =>
-                    setFormData({ ...formData, address: e.target.value })
-                  }
-                  className="w-full bg-gray-950 border border-white/10 px-4 py-3 text-white font-light focus:outline-none focus:border-white/30 transition-colors h-24 resize-none"
-                  placeholder="Suite 8, Rhomat plaza, Rayfield, Jos"
-                />
+              {/* Reservation Section */}
+              <div className="border-t border-white/10 pt-6">
+                <p className="text-sm text-white/80 mb-4 font-light">
+                  Select your details and we&apos;ll try to get the best seats for you.
+                </p>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm text-white/60 mb-2 font-light">
+                      Party Size *
+                    </label>
+                    <select
+                      required
+                      value={formData.partySize}
+                      onChange={(e) =>
+                        setFormData({ ...formData, partySize: parseInt(e.target.value) })
+                      }
+                      className="w-full bg-gray-950 border border-white/10 px-4 py-3 text-white font-light focus:outline-none focus:border-white/30 transition-colors"
+                    >
+                      {[2, 3, 4, 5, 6].map((size) => (
+                        <option key={size} value={size}>
+                          {size} {size === 1 ? 'guest' : 'guests'}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm text-white/60 mb-2 font-light">
+                      Date *
+                    </label>
+                    <input
+                      type="date"
+                      required
+                      min={getMinDate()}
+                      value={formData.date}
+                      onChange={(e) =>
+                        setFormData({ ...formData, date: e.target.value, time: '' })
+                      }
+                      className="w-full bg-gray-950 border border-white/10 px-4 py-3 text-white font-light focus:outline-none focus:border-white/30 transition-colors"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm text-white/60 mb-4 font-light">
+                      Time *
+                    </label>
+                    <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                      {timeSlots.map((slot) => {
+                        const isSelected = formData.time === slot;
+                        return (
+                          <button
+                            key={slot}
+                            type="button"
+                            onClick={() => setFormData({ ...formData, time: slot })}
+                            className={`py-2 sm:py-2.5 px-3 text-xs sm:text-sm font-light border transition-all duration-300 ${
+                              isSelected
+                                ? 'bg-white text-black border-white'
+                                : 'bg-transparent text-white border-white/20 hover:border-white/40'
+                            }`}
+                          >
+                            {formatTimeDisplay(slot)}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <button
                 type="submit"
-                disabled={loading || invoiceLoading}
+                disabled={loading || invoiceLoading || !isMinimumMet || !formData.time}
                 className="w-full bg-white text-black py-4 font-light hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading || invoiceLoading ? 'Processing...' : `Pay ${formatPrice(getTotal())}`}
@@ -361,4 +468,3 @@ export default function CheckoutPage() {
     </div>
   );
 }
-
