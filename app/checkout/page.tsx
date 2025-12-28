@@ -55,6 +55,7 @@ export default function CheckoutPage() {
   const router = useRouter();
   const { createInvoice, loading: invoiceLoading } = useCreateInvoice();
   const [loading, setLoading] = useState(false);
+  const [processingPayment, setProcessingPayment] = useState(false);
   const [paystackReady, setPaystackReady] = useState(false);
   const [selectedTime, setSelectedTime] = useState<string>('');
   const timeSlots = generateTimeSlots();
@@ -64,7 +65,7 @@ export default function CheckoutPage() {
     firstName: '',
     lastName: '',
     phone: '',
-    partySize: 2,
+    partySize: 1,
     date: '',
     time: '',
   });
@@ -124,7 +125,8 @@ export default function CheckoutPage() {
       return;
     }
 
-    if (getTotal() < MINIMUM_SPEND) {
+    const adjustedTotal = getTotal() * formData.partySize;
+    if (adjustedTotal < MINIMUM_SPEND) {
       alert(`Minimum spend of ${formatPrice(MINIMUM_SPEND)} required for checkout. Please add more items to your cart.`);
       return;
     }
@@ -144,11 +146,10 @@ export default function CheckoutPage() {
         setLoading(false);
         return;
       }
-
       const handler = window.PaystackPop!.setup({
         key: publicKey,
         email: formData.email,
-        amount: getTotal() * 100,
+        amount: adjustedTotal * 100,
         currency: 'NGN',
         ref: `ref_${Date.now()}`,
         metadata: {
@@ -186,6 +187,7 @@ export default function CheckoutPage() {
           ],
         },
         callback: function (response: any) {
+          setProcessingPayment(true);
           const customerName = `${formData.firstName} ${formData.lastName}`.trim() || 'Customer';
           
           createInvoice({
@@ -199,10 +201,12 @@ export default function CheckoutPage() {
             reservationDate: formData.date,
             reservationTime: formData.time,
             partySize: formData.partySize,
+            originalTotal: getTotal() * formData.partySize, // Payment amount (cart total × party size)
           }).then((invoiceResult) => {
             if (invoiceResult.success) {
               console.log('Invoice created successfully:', invoiceResult.invoiceReference);
               clearCart();
+              setProcessingPayment(false);
               router.push('/success');
             } else {
               console.error('Invoice creation failed:', invoiceResult.error);
@@ -212,6 +216,7 @@ export default function CheckoutPage() {
                 console.warn('Invoice creation had an issue, but payment was successful.');
               }
               clearCart();
+              setProcessingPayment(false);
               router.push('/success');
             }
           }).catch((error) => {
@@ -220,6 +225,7 @@ export default function CheckoutPage() {
               console.warn('Invoice creation skipped - credentials not configured. Payment was successful.');
             }
             clearCart();
+            setProcessingPayment(false);
             router.push('/success');
           });
         },
@@ -245,6 +251,23 @@ export default function CheckoutPage() {
     return `${hour12}:${minutes} ${ampm}`;
   };
 
+  // Loading overlay for payment processing
+  if (processingPayment) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center px-4">
+        <div className="text-center">
+          <div className="mb-8">
+            <div className="inline-block animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-white"></div>
+          </div>
+          <h2 className="text-2xl sm:text-3xl font-light mb-4">Processing Your Order</h2>
+          <p className="text-white/60 font-light text-sm sm:text-base">
+            Creating your reservation... Please wait.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   if (items.length === 0) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center px-4">
@@ -261,8 +284,9 @@ export default function CheckoutPage() {
     );
   }
 
-  const isMinimumMet = getTotal() >= MINIMUM_SPEND;
-  const remaining = MINIMUM_SPEND - getTotal();
+  const getAdjustedTotal = () => getTotal() * formData.partySize;
+  const isMinimumMet = getAdjustedTotal() >= MINIMUM_SPEND;
+  const remaining = MINIMUM_SPEND - getAdjustedTotal();
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -285,26 +309,30 @@ export default function CheckoutPage() {
               Order Summary
             </h2>
             <div className="space-y-4 mb-6">
-              {items.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex justify-between items-start border-b border-white/10 pb-4"
-                >
-                  <div>
-                    <p className="text-white font-light">{item.name}</p>
-                    <p className="text-white/60 text-sm font-extralight">
-                      Qty: {item.quantity}
+              {items.map((item) => {
+                const adjustedQuantity = item.quantity * formData.partySize;
+                const adjustedPrice = item.price * adjustedQuantity;
+                return (
+                  <div
+                    key={item.id}
+                    className="flex justify-between items-start border-b border-white/10 pb-4"
+                  >
+                    <div>
+                      <p className="text-white font-light">{item.name}</p>
+                      <p className="text-white/60 text-sm font-extralight">
+                        Qty: {item.quantity} × {formData.partySize} guests = {adjustedQuantity}
+                      </p>
+                    </div>
+                    <p className="text-white font-light">
+                      {formatPrice(adjustedPrice)}
                     </p>
                   </div>
-                  <p className="text-white font-light">
-                    {formatPrice(item.price * item.quantity)}
-                  </p>
-                </div>
-              ))}
+                );
+              })}
             </div>
             <div className="flex justify-between items-center pt-4 border-t border-white/10 mb-4">
               <span className="text-xl font-light">Total</span>
-              <span className="text-2xl font-light">{formatPrice(getTotal())}</span>
+              <span className="text-2xl font-light">{formatPrice(getAdjustedTotal())}</span>
             </div>
             {!isMinimumMet && (
               <div className="text-sm text-amber-200/60 font-light text-center">
@@ -403,7 +431,7 @@ export default function CheckoutPage() {
                       }
                       className="w-full bg-gray-950 border border-white/10 px-4 py-3 text-white font-light focus:outline-none focus:border-white/30 transition-colors"
                     >
-                      {[2, 3, 4, 5, 6].map((size) => (
+                      {[1, 2, 3, 4, 5, 6].map((size) => (
                         <option key={size} value={size}>
                           {size} {size === 1 ? 'guest' : 'guests'}
                         </option>
@@ -459,7 +487,7 @@ export default function CheckoutPage() {
                 disabled={loading || invoiceLoading || !isMinimumMet || !formData.time}
                 className="w-full bg-white text-black py-4 font-light hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading || invoiceLoading ? 'Processing...' : `Pay ${formatPrice(getTotal())}`}
+                {loading || invoiceLoading ? 'Processing...' : `Pay ${formatPrice(getAdjustedTotal())}`}
               </button>
             </form>
           </div>

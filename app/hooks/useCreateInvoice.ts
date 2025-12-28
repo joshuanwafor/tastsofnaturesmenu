@@ -31,6 +31,7 @@ interface CreateInvoiceParams {
   reservationDate?: string;
   reservationTime?: string;
   partySize?: number;
+  originalTotal?: number; // Original payment amount (before quantity multiplication)
 }
 
 interface CreateInvoiceResponse {
@@ -60,6 +61,7 @@ export function useCreateInvoice() {
         reservationDate,
         reservationTime,
         partySize,
+        originalTotal,
       } = params;
 
       // Get API credentials from environment variables
@@ -82,20 +84,24 @@ export function useCreateInvoice() {
       }
 
       // Map cart items to invoice items format
+      // Multiply cart item quantity by number of guests (default is 1 guest if not provided)
+      const numberOfGuests = partySize || 1;
       const invoiceItems: InvoiceItem[] = items.map((item, index) => {
         const itemId = `item-${item.id}-${Date.now()}-${index}`;
+        // New quantity = cart item quantity * number of guests
+        const adjustedQuantity = item.quantity * numberOfGuests;
         return {
           _productName: item.name,
-          quantity: item.quantity,
+          quantity: adjustedQuantity,
           _productUnitPrice: item.price,
           _productCostPrice: 0,
           _productUnitCfx: 1,
-          _productUnitTotal: item.price * item.quantity,
+          _productUnitTotal: item.price * adjustedQuantity,
           _productInstanceId: '',
           _productUnitName: '',
           _productId: itemId,
           _productUnitId: '',
-          _productUnitQty: item.quantity,
+          _productUnitQty: adjustedQuantity,
           _productUnitSymbol: '',
           unitPrice: item.price,
           buyingPrice: 0,
@@ -179,8 +185,10 @@ export function useCreateInvoice() {
         });
       }
 
-      // Calculate totals (excluding party size which is 0)
-      const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+      // Calculate totals (already multiplied by party size in invoice items above)
+      const subtotal = invoiceItems
+        .filter(item => item._productName !== 'Customer' && !item._productName.includes('Reservation Booking'))
+        .reduce((sum, item) => sum + item._productUnitTotal, 0);
       const invoiceReference = `REF-${Date.now()}`;
       const invoiceDate = new Date().toISOString();
       
@@ -237,7 +245,7 @@ export function useCreateInvoice() {
         },
         notes: `Order placed online. Payment reference: ${paymentReference}.${partySize ? ` Party Size: ${partySize} guests.` : ''}${reservationDate ? ` Reservation Date: ${reservationDate}.` : ''}${reservationTime ? ` Reservation Time: ${reservationTime}.` : ''}`,
         termsAndConditions: '',
-        initialPaymentAmount: subtotal,
+        initialPaymentAmount: originalTotal || subtotal,
         requiresDelivery: true,
         paymentDueDate,
         confirmStockAvailability: false,

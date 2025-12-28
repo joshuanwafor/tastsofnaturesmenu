@@ -103,7 +103,10 @@ export default function Home() {
           <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extralight text-white mb-8 sm:mb-10 md:mb-12 tracking-tight leading-none">
             MENU
           </h2>
-          <div className="w-16 sm:w-20 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent mx-auto"></div>
+          <div className="w-16 sm:w-20 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent mx-auto mb-6 sm:mb-8"></div>
+          <p className="text-sm sm:text-base text-white/60 font-light tracking-wide max-w-2xl mx-auto px-4">
+            A minimum spend of ₦150,000 is required for checkout. Your order total is calculated by multiplying selected items by the number of guests in your party.
+          </p>
         </div>
 
         {/* Appetizers Section */}
