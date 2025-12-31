@@ -125,8 +125,9 @@ export default function CheckoutPage() {
       return;
     }
 
-    if (getTotal() < MINIMUM_SPEND) {
-      alert(`Baseline spend of ${formatPrice(MINIMUM_SPEND)} required for checkout. Please add more items to your cart.`);
+    const minimumSpend = MINIMUM_SPEND * formData.partySize;
+    if (getTotal() < minimumSpend) {
+      alert(`Baseline spend of ${formatPrice(minimumSpend)} required for checkout (₦150,000 per guest). Please add more items to your cart.`);
       return;
     }
 
@@ -283,19 +284,40 @@ export default function CheckoutPage() {
     );
   }
 
-  const isMinimumMet = getTotal() >= MINIMUM_SPEND;
-  const remaining = MINIMUM_SPEND - getTotal();
+  const minimumSpend = MINIMUM_SPEND * formData.partySize;
+  const isMinimumMet = getTotal() >= minimumSpend;
+  const remaining = minimumSpend - getTotal();
 
   return (
     <div className="min-h-screen bg-black text-white">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-20">
+        <button
+          onClick={() => router.push('/')}
+          className="mb-6 sm:mb-8 text-white/60 hover:text-white font-light text-sm transition-colors flex items-center gap-2"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-4 w-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M15 19l-7-7 7-7"
+            />
+          </svg>
+          Back to Menu
+        </button>
         <h1 className="text-3xl sm:text-4xl font-extralight mb-8 sm:mb-12 text-center">Checkout</h1>
 
         {/* Minimum Spend Warning */}
         {!isMinimumMet && (
           <div className="mb-6 p-4 bg-amber-900/20 border border-amber-800/50 text-amber-200 text-center">
             <p className="text-sm font-light">
-              Baseline spend of {formatPrice(MINIMUM_SPEND)} required. Add {formatPrice(remaining)} more to checkout.
+              Baseline spend of {formatPrice(minimumSpend)} required ({formatPrice(MINIMUM_SPEND)} per guest). Add {formatPrice(remaining)} more to checkout.
             </p>
           </div>
         )}
