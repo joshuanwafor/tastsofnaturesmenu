@@ -1,9 +1,8 @@
 'use client';
 
 import Image from 'next/image';
-import { useCart } from './contexts/CartContext';
 import { formatPrice } from './utils/format';
-import { describe } from 'node:test';
+import { AddToCartButton } from './components/AddToCartButton';
 
 const solsticeMenuItems = {
   appetizers: [
@@ -82,7 +81,6 @@ function generateId(name: string): string {
 }
 
 export default function Home() {
-  const { addToCart } = useCart();
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -136,16 +134,13 @@ export default function Home() {
                   <h4 className="text-lg sm:text-xl font-light text-white mb-3 sm:mb-4 tracking-tight leading-tight">{item.name}</h4>
                   <div className="mt-auto">
                     <p className="text-lg sm:text-xl font-extralight text-white/80 mb-3 sm:mb-4">{formatPrice(item.price)}</p>
-                    <button
-                      onClick={() => addToCart({
+                    <AddToCartButton
+                      item={{
                         id: generateId(item.name),
                         name: item.name,
                         price: item.price,
-                      })}
-                      className="w-full border border-white/20 py-2 sm:py-2.5 text-xs sm:text-sm font-light hover:border-white/40 hover:bg-white/5 transition-all duration-300"
-                    >
-                      Add to Cart
-                    </button>
+                      }}
+                    />
                   </div>
                 </div>
                 <div className="absolute bottom-0 left-0 w-0 h-px bg-white/20 group-hover:w-full transition-all duration-500"></div>
@@ -174,17 +169,14 @@ export default function Home() {
                 {item.description && (
                   <p className="text-xs sm:text-sm text-gray-400/80 leading-relaxed font-light tracking-wide mt-4 sm:mt-6 mb-4 sm:mb-6">{item.description}</p>
                 )}
-                <button
-                  onClick={() => addToCart({
+                <AddToCartButton
+                  item={{
                     id: generateId(item.name),
                     name: item.name,
                     price: item.price,
                     description: item.description,
-                  })}
-                  className="w-full border border-white/20 py-2 sm:py-2.5 text-xs sm:text-sm font-light hover:border-white/40 hover:bg-white/5 transition-all duration-300"
-                >
-                  Add to Cart
-                </button>
+                  }}
+                />
                 <div className="absolute bottom-0 left-0 w-0 h-px bg-white/20 group-hover:w-full transition-all duration-500"></div>
               </div>
             ))}
@@ -211,17 +203,15 @@ export default function Home() {
                 {item.description && (
                   <p className="text-sm sm:text-base text-gray-300/70 leading-relaxed font-light tracking-wide max-w-2xl mb-4 sm:mb-6">{item.description}</p>
                 )}
-                <button
-                  onClick={() => addToCart({
+                <AddToCartButton
+                  item={{
                     id: generateId(item.name),
                     name: item.name,
                     price: item.price,
                     description: item.description,
-                  })}
-                  className="border border-white/20 px-6 sm:px-8 py-2.5 sm:py-3 text-xs sm:text-sm font-light hover:border-white/40 hover:bg-white/5 transition-all duration-300"
-                >
-                  Add to Cart
-                </button>
+                  }}
+                  variant="main-course"
+                />
                 <div className="absolute bottom-0 left-0 w-0 h-px bg-white/20 group-hover:w-full transition-all duration-700"></div>
               </div>
             ))}
@@ -245,16 +235,13 @@ export default function Home() {
                   <h4 className="text-lg sm:text-xl font-light text-white mb-3 sm:mb-4 tracking-tight leading-tight">{item.name}</h4>
                   <div className="mt-auto">
                     <p className="text-lg sm:text-xl font-extralight text-white/80 mb-3 sm:mb-4">{formatPrice(item.price)}</p>
-                    <button
-                      onClick={() => addToCart({
+                    <AddToCartButton
+                      item={{
                         id: generateId(item.name),
                         name: item.name,
                         price: item.price,
-                      })}
-                      className="w-full border border-white/20 py-2 sm:py-2.5 text-xs sm:text-sm font-light hover:border-white/40 hover:bg-white/5 transition-all duration-300"
-                    >
-                      Add to Cart
-                    </button>
+                      }}
+                    />
                   </div>
                 </div>
                 <div className="absolute bottom-0 left-0 w-0 h-px bg-white/20 group-hover:w-full transition-all duration-500"></div>
@@ -279,22 +266,19 @@ export default function Home() {
                   <h4 className="text-lg sm:text-xl font-light text-white mb-3 sm:mb-4 tracking-tight leading-tight">{item.name}</h4>
                   <div className="mt-auto">
                     <p className="text-lg sm:text-xl font-extralight text-white/80 mb-3 sm:mb-4">{formatPrice(item.price)}</p>
-                    <button
-                      onClick={() => addToCart({
+                    <AddToCartButton
+                      item={{
                         id: generateId(item.name),
                         name: item.name,
                         price: item.price,
-                      })}
-                      className="w-full border border-white/20 py-2 sm:py-2.5 text-xs sm:text-sm font-light hover:border-white/40 hover:bg-white/5 transition-all duration-300"
-                    >
-                      Add to Cart
-                    </button>
+                      }}
+                    />
                   </div>
                 </div>
                 <div className="absolute bottom-0 left-0 w-0 h-px bg-white/20 group-hover:w-full transition-all duration-500"></div>
               </div>
             ))}
-        </div>
+          </div>
         </section>
       </main>
     </div>
