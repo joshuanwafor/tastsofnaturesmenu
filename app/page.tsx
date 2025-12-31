@@ -33,7 +33,7 @@ const solsticeMenuItems = {
       price: 45000 
     },
     { 
-      name: "Steamed Aromatic Compound Salad", 
+      name: "Indian Salad", 
       price: 40000 
     },
   ],
@@ -54,7 +54,7 @@ const solsticeMenuItems = {
       price: 57000 
     },
     { 
-      name: "Natures Pot", 
+      name: "Pumpkin Alfredo", 
       description: "Cajun ram and vegetable stew, served with grilled vegetables or brown basmati rice.",
       price: 57000 
     },
@@ -260,7 +260,6 @@ export default function Home() {
             ))}
           </div>
         </section>
-
         {/* Desserts Section */}
         <section className="mb-12 sm:mb-16 md:mb-24">
           <div className="flex items-center mb-8 sm:mb-12 md:mb-16">
