@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { useCart } from './contexts/CartContext';
 import { formatPrice } from './utils/format';
+import { describe } from 'node:test';
 
 const solsticeMenuItems = {
   appetizers: [
@@ -34,6 +35,7 @@ const solsticeMenuItems = {
     },
     { 
       name: "Indian Salad", 
+      description:" A seasonal medley of steamed vegetables, lightly seasoned with a mild curry dressing.",
       price: 40000 
     },
   ],
