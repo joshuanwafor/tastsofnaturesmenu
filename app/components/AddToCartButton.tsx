@@ -42,7 +42,7 @@ export function AddToCartButton({ item, variant = 'default' }: AddToCartButtonPr
     return (
       <button
         onClick={isItemInCart ? handleRemove : handleAdd}
-        className={`border px-6 sm:px-8 py-2.5 sm:py-3 text-xs sm:text-sm ${baseClasses} ${
+        className={`w-full border py-2.5 sm:py-3 text-xs sm:text-sm ${baseClasses} ${
           isItemInCart ? addedClasses : enabledClasses
         } flex items-center justify-center gap-2`}
       >
