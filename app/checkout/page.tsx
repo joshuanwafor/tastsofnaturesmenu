@@ -126,7 +126,7 @@ export default function CheckoutPage() {
     }
 
     if (getTotal() < MINIMUM_SPEND) {
-      alert(`Minimum spend of ${formatPrice(MINIMUM_SPEND)} required for checkout. Please add more items to your cart.`);
+      alert(`Baseline spend of ${formatPrice(MINIMUM_SPEND)} required for checkout. Please add more items to your cart.`);
       return;
     }
 
@@ -295,7 +295,7 @@ export default function CheckoutPage() {
         {!isMinimumMet && (
           <div className="mb-6 p-4 bg-amber-900/20 border border-amber-800/50 text-amber-200 text-center">
             <p className="text-sm font-light">
-              Minimum spend of {formatPrice(MINIMUM_SPEND)} required. Add {formatPrice(remaining)} more to checkout.
+              Baseline spend of {formatPrice(MINIMUM_SPEND)} required. Add {formatPrice(remaining)} more to checkout.
             </p>
           </div>
         )}
