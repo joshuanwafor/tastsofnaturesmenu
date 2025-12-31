@@ -46,7 +46,7 @@ const solsticeMenuItems = {
     { 
       name: "Seafood Party", 
       description: "A luxurious mix of prawns, shrimps, calamari, octopus, white fish, and snail, served with three sides, three salads, and a signature lemon sauce.",
-      price: 150000 
+      price: 250000 
     },
     { 
       name: "Joplan Bowl", 
@@ -105,7 +105,7 @@ export default function Home() {
           </h2>
           <div className="w-16 sm:w-20 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent mx-auto mb-6 sm:mb-8"></div>
           <p className="text-sm sm:text-base text-white/60 font-light tracking-wide max-w-2xl mx-auto px-4">
-            A minimum spend of ₦150,000 is required for checkout. Your order total is calculated by multiplying selected items by the number of guests in your party.
+            A baseline spend of ₦150,000 is required for checkout. Your order total is calculated by multiplying selected items by the number of guests in your party.
           </p>
         </div>
 
@@ -250,7 +250,7 @@ export default function Home() {
                 <div className="absolute bottom-0 left-0 w-0 h-px bg-white/20 group-hover:w-full transition-all duration-500"></div>
               </div>
             ))}
-          </div>
+        </div>
         </section>
       </main>
     </div>

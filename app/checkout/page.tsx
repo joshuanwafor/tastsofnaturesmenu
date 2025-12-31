@@ -125,8 +125,7 @@ export default function CheckoutPage() {
       return;
     }
 
-    const adjustedTotal = getTotal() * formData.partySize;
-    if (adjustedTotal < MINIMUM_SPEND) {
+    if (getTotal() < MINIMUM_SPEND) {
       alert(`Minimum spend of ${formatPrice(MINIMUM_SPEND)} required for checkout. Please add more items to your cart.`);
       return;
     }
@@ -149,7 +148,7 @@ export default function CheckoutPage() {
       const handler = window.PaystackPop!.setup({
         key: publicKey,
         email: formData.email,
-        amount: adjustedTotal * 100,
+        amount: getTotal() * 100,
         currency: 'NGN',
         ref: `ref_${Date.now()}`,
         metadata: {
@@ -201,7 +200,7 @@ export default function CheckoutPage() {
             reservationDate: formData.date,
             reservationTime: formData.time,
             partySize: formData.partySize,
-            originalTotal: getTotal() * formData.partySize, // Payment amount (cart total × party size)
+            originalTotal: getTotal(), // Payment amount
           }).then((invoiceResult) => {
             if (invoiceResult.success) {
               console.log('Invoice created successfully:', invoiceResult.invoiceReference);
@@ -284,9 +283,8 @@ export default function CheckoutPage() {
     );
   }
 
-  const getAdjustedTotal = () => getTotal() * formData.partySize;
-  const isMinimumMet = getAdjustedTotal() >= MINIMUM_SPEND;
-  const remaining = MINIMUM_SPEND - getAdjustedTotal();
+  const isMinimumMet = getTotal() >= MINIMUM_SPEND;
+  const remaining = MINIMUM_SPEND - getTotal();
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -309,30 +307,26 @@ export default function CheckoutPage() {
               Order Summary
             </h2>
             <div className="space-y-4 mb-6">
-              {items.map((item) => {
-                const adjustedQuantity = item.quantity * formData.partySize;
-                const adjustedPrice = item.price * adjustedQuantity;
-                return (
-                  <div
-                    key={item.id}
-                    className="flex justify-between items-start border-b border-white/10 pb-4"
-                  >
-                    <div>
-                      <p className="text-white font-light">{item.name}</p>
-                      <p className="text-white/60 text-sm font-extralight">
-                        Qty: {item.quantity} × {formData.partySize} guests = {adjustedQuantity}
-                      </p>
-                    </div>
-                    <p className="text-white font-light">
-                      {formatPrice(adjustedPrice)}
+              {items.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex justify-between items-start border-b border-white/10 pb-4"
+                >
+                  <div>
+                    <p className="text-white font-light">{item.name}</p>
+                    <p className="text-white/60 text-sm font-extralight">
+                      Qty: {item.quantity}
                     </p>
                   </div>
-                );
-              })}
+                  <p className="text-white font-light">
+                    {formatPrice(item.price * item.quantity)}
+                  </p>
+                </div>
+              ))}
             </div>
             <div className="flex justify-between items-center pt-4 border-t border-white/10 mb-4">
               <span className="text-xl font-light">Total</span>
-              <span className="text-2xl font-light">{formatPrice(getAdjustedTotal())}</span>
+              <span className="text-2xl font-light">{formatPrice(getTotal())}</span>
             </div>
             {!isMinimumMet && (
               <div className="text-sm text-amber-200/60 font-light text-center">
@@ -487,7 +481,7 @@ export default function CheckoutPage() {
                 disabled={loading || invoiceLoading || !isMinimumMet || !formData.time}
                 className="w-full bg-white text-black py-4 font-light hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading || invoiceLoading ? 'Processing...' : `Pay ${formatPrice(getAdjustedTotal())}`}
+                {loading || invoiceLoading ? 'Processing...' : `Pay ${formatPrice(getTotal())}`}
               </button>
             </form>
           </div>
