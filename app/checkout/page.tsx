@@ -4,9 +4,9 @@ import { useState, useEffect } from 'react';
 import { useCart } from '../contexts/CartContext';
 import { formatPrice } from '../utils/format';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useCreateInvoice } from '../hooks/useCreateInvoice';
-
-const MINIMUM_SPEND = 150000; // ₦150,000
+import { SIGNATURE_DINING, countSignaturePackages } from '../data/menu';
 
 interface PaystackPop {
   setup(options: {
@@ -65,7 +65,7 @@ export default function CheckoutPage() {
     firstName: '',
     lastName: '',
     phone: '',
-    partySize: 1,
+    partySize: 2,
     date: '',
     time: '',
   });
@@ -117,6 +117,15 @@ export default function CheckoutPage() {
     };
   }, []);
 
+  // Every two guests need one Signature Dining package
+  const packageCount = countSignaturePackages(items);
+  const requiredPackages = Math.ceil(formData.partySize / SIGNATURE_DINING.guestsPerPackage);
+  const missingPackages = Math.max(requiredPackages - packageCount, 0);
+  const isMinimumMet = missingPackages === 0;
+  const packageRequirement = `A party of ${formData.partySize} needs ${requiredPackages} Signature Dining ${
+    requiredPackages === 1 ? 'package' : 'packages'
+  } (one for every ${SIGNATURE_DINING.guestsPerPackage} guests).`;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -125,9 +134,8 @@ export default function CheckoutPage() {
       return;
     }
 
-    const minimumSpend = MINIMUM_SPEND * formData.partySize;
-    if (getTotal() < minimumSpend) {
-      alert(`Baseline spend of ${formatPrice(minimumSpend)} required for checkout (₦150,000 per guest). Please add more items to your cart.`);
+    if (!isMinimumMet) {
+      alert(`${packageRequirement} Please add ${missingPackages} more.`);
       return;
     }
 
@@ -274,25 +282,21 @@ export default function CheckoutPage() {
         <div className="text-center">
           <h1 className="text-2xl sm:text-3xl font-light mb-4">Your cart is empty</h1>
           <button
-            onClick={() => router.push('/')}
+            onClick={() => router.push('/signature')}
             className="border border-white/20 px-8 py-3 font-light hover:border-white/40 transition-colors"
           >
-            Return to Menu
+            Choose Signature Dining
           </button>
         </div>
       </div>
     );
   }
 
-  const minimumSpend = MINIMUM_SPEND * formData.partySize;
-  const isMinimumMet = getTotal() >= minimumSpend;
-  const remaining = minimumSpend - getTotal();
-
   return (
     <div className="min-h-screen bg-black text-white">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-20">
         <button
-          onClick={() => router.push('/')}
+          onClick={() => router.push('/signature')}
           className="mb-6 sm:mb-8 text-white/60 hover:text-white font-light text-sm transition-colors flex items-center gap-2"
         >
           <svg
@@ -309,15 +313,18 @@ export default function CheckoutPage() {
               d="M15 19l-7-7 7-7"
             />
           </svg>
-          Back to Menu
+          Back to Signature Dining
         </button>
         <h1 className="text-3xl sm:text-4xl font-extralight mb-8 sm:mb-12 text-center">Checkout</h1>
 
-        {/* Minimum Spend Warning */}
+        {/* Signature Dining package requirement */}
         {!isMinimumMet && (
           <div className="mb-6 p-4 bg-amber-900/20 border border-amber-800/50 text-amber-200 text-center">
             <p className="text-sm font-light">
-              Baseline spend of {formatPrice(minimumSpend)} required ({formatPrice(MINIMUM_SPEND)} per guest). Add {formatPrice(remaining)} more to checkout.
+              {packageRequirement} Add {missingPackages} more to checkout.{' '}
+              <Link href="/signature" className="underline underline-offset-4 hover:text-white">
+                Build another package
+              </Link>
             </p>
           </div>
         )}
@@ -336,6 +343,11 @@ export default function CheckoutPage() {
                 >
                   <div>
                     <p className="text-white font-light">{item.name}</p>
+                    {item.courses?.map((course) => (
+                      <p key={course} className="text-white/40 text-xs font-light">
+                        {course}
+                      </p>
+                    ))}
                     <p className="text-white/60 text-sm font-extralight">
                       Qty: {item.quantity}
                     </p>
@@ -352,7 +364,7 @@ export default function CheckoutPage() {
             </div>
             {!isMinimumMet && (
               <div className="text-sm text-amber-200/60 font-light text-center">
-                {formatPrice(remaining)} remaining to reach minimum
+                {missingPackages} more Signature Dining {missingPackages === 1 ? 'package' : 'packages'} needed
               </div>
             )}
           </div>

@@ -21,15 +21,15 @@ export default function SuccessPage() {
             />
           </svg>
         </div>
-        <h1 className="text-4xl font-extralight mb-4">Order Confirmed</h1>
+        <h1 className="text-4xl font-extralight mb-4">Reservation Confirmed</h1>
         <p className="text-white/60 font-light mb-8">
-          Thank you for your order! We&apos;ll prepare your meal and contact you shortly.
+          Thank you for your reservation! We&apos;ll prepare your Signature Dining experience and contact you shortly.
         </p>
         <Link
           href="/"
           className="inline-block border border-white/20 px-8 py-3 font-light hover:border-white/40 transition-colors"
         >
-          Return to Menu
+          Return Home
         </Link>
       </div>
     </div>

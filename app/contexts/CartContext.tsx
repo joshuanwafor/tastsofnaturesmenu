@@ -8,6 +8,7 @@ export interface CartItem {
   price: number;
   quantity: number;
   description?: string;
+  courses?: string[]; // Signature Dining choices, e.g. "Starter: Savory Gold"
 }
 
 interface CartContextType {
