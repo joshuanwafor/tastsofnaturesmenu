@@ -85,6 +85,11 @@ export function Cart() {
                     <div className="flex justify-between items-start mb-3">
                       <div className="flex-1">
                         <h3 className="text-white font-light mb-1">{item.name}</h3>
+                        {item.courses?.map((course) => (
+                          <p key={course} className="text-white/40 text-xs font-light">
+                            {course}
+                          </p>
+                        ))}
                         <p className="text-white/60 text-sm font-extralight">
                           {formatPrice(item.price)}
                         </p>

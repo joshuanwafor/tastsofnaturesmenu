@@ -31,7 +31,7 @@ interface CreateInvoiceParams {
   reservationDate?: string;
   reservationTime?: string;
   partySize?: number;
-  originalTotal?: number; // Original payment amount (before quantity multiplication)
+  originalTotal?: number; // Amount charged via Paystack
 }
 
 interface CreateInvoiceResponse {
@@ -84,28 +84,27 @@ export function useCreateInvoice() {
       }
 
       // Map cart items to invoice items format
-      // Multiply cart item quantity by number of guests (default is 1 guest if not provided)
-      const numberOfGuests = partySize || 1;
+      // Quantities are billed as-is: a Signature Dining package already covers two guests
       const invoiceItems: InvoiceItem[] = items.map((item, index) => {
         const itemId = `item-${item.id}-${Date.now()}-${index}`;
-        // New quantity = cart item quantity * number of guests
-        const adjustedQuantity = item.quantity * numberOfGuests;
+        // Carry Signature Dining course choices into the POS so the kitchen sees them
+        const productName = item.courses ? `${item.name} (${item.courses.join('; ')})` : item.name;
         return {
-          _productName: item.name,
-          quantity: adjustedQuantity,
+          _productName: productName,
+          quantity: item.quantity,
           _productUnitPrice: item.price,
           _productCostPrice: 0,
           _productUnitCfx: 1,
-          _productUnitTotal: item.price * adjustedQuantity,
+          _productUnitTotal: item.price * item.quantity,
           _productInstanceId: '',
           _productUnitName: '',
           _productId: itemId,
           _productUnitId: '',
-          _productUnitQty: adjustedQuantity,
+          _productUnitQty: item.quantity,
           _productUnitSymbol: '',
           unitPrice: item.price,
           buyingPrice: 0,
-          itemName: item.name,
+          itemName: productName,
           itemId: itemId,
         };
       });
@@ -185,7 +184,7 @@ export function useCreateInvoice() {
         });
       }
 
-      // Calculate totals (already multiplied by party size in invoice items above)
+      // Calculate totals
       const subtotal = invoiceItems
         .filter(item => item._productName !== 'Customer' && !item._productName.includes('Reservation Booking'))
         .reduce((sum, item) => sum + item._productUnitTotal, 0);

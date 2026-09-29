@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Cormorant_Garamond } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "./contexts/CartContext";
-import { Cart } from "./components/Cart";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,11 +13,19 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-
+// Variable font on purpose: Google intermittently serves fixed weights from
+// fonts.gstatic.com/l/font?kit=... URLs, which the Turbopack font loader can't resolve.
+const cormorant = Cormorant_Garamond({
+  variable: "--font-cormorant",
+  subsets: ["latin"],
+});
 
 export const metadata: Metadata = {
-  title: "Nature's Crunch & Burst | Solstice Menu",
-  description: "Nature's Crunch & Burst - Solstice Menu. Special seasonal offerings in Jos, Nigeria.",
+  title: {
+    default: "Nature's Crunch & Burst",
+    template: "%s | Nature's Crunch & Burst",
+  },
+  description: "Nature's Crunch & Burst - Signature Dining and walk-in menu in Jos, Nigeria. Where taste meets distinction.",
 };
 
 export default function RootLayout({
@@ -29,11 +36,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${cormorant.variable} antialiased`}
       >
         <CartProvider>
           {children}
-          <Cart />
         </CartProvider>
       </body>
     </html>
