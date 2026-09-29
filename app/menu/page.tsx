@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { SiteHeader } from '../components/SiteHeader';
 import { Ornament } from '../components/Ornament';
+import { SectionNav } from '../components/SectionNav';
 import { walkInMenu, beverageCollection, cigarCollection, MenuItem } from '../data/menu';
 import { formatPrice } from '../utils/format';
 
@@ -74,24 +75,11 @@ export default function WalkInMenuPage() {
       />
 
       <SiteHeader backHref="/experience" backLabel="Experiences">
-        <nav className="border-t border-white/5">
-          <ul className="max-w-5xl mx-auto flex justify-center gap-8 sm:gap-12 py-3">
-            {collections.map((collection) => (
-              <li key={collection.id}>
-                <a
-                  href={`#${collection.id}`}
-                  className="text-[11px] sm:text-xs uppercase tracking-[0.3em] text-white/55 hover:text-gold transition-colors"
-                >
-                  {collection.label}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </nav>
+        <SectionNav sections={collections} />
       </SiteHeader>
 
       <main className="max-w-3xl mx-auto px-5 sm:px-8 py-14 sm:py-20">
-        <section id="food" className="scroll-mt-36">
+        <section id="food" className="scroll-mt-40">
           <CollectionTitle title="Walk-In Menu" subtitle="No reservation required" />
           {walkInMenu.map((section) => (
             <MenuList key={section.title} title={section.title} items={section.items} />
@@ -100,7 +88,7 @@ export default function WalkInMenuPage() {
 
         <Ornament className="my-16 sm:my-24" />
 
-        <section id="beverages" className="scroll-mt-36">
+        <section id="beverages" className="scroll-mt-40">
           <CollectionTitle title="Beverage Collection" subtitle="A curated selection for the evening" />
           {beverageCollection.map((section) => (
             <MenuList key={section.title} title={section.title} items={section.items} />
@@ -110,7 +98,7 @@ export default function WalkInMenuPage() {
 
         <Ornament className="my-16 sm:my-24" />
 
-        <section id="cigars" className="scroll-mt-36">
+        <section id="cigars" className="scroll-mt-40">
           <CollectionTitle title="Cigar Collection" subtitle="A curated selection for the evening" />
           <MenuList items={cigarCollection} />
           <Tagline>Cut &nbsp;•&nbsp; Light &nbsp;•&nbsp; Unwind</Tagline>

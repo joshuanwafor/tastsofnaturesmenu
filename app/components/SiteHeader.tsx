@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import logo from '@/public/logo-trimmed.png';
+import logo from '@/public/logo-gold.png';
 
 interface SiteHeaderProps {
   backHref: string;
@@ -10,7 +10,7 @@ interface SiteHeaderProps {
 
 export function SiteHeader({ backHref, backLabel, children }: SiteHeaderProps) {
   return (
-    <header className="sticky top-0 z-40 border-b border-white/5 bg-black/80 backdrop-blur-xl">
+    <header className="sticky top-0 z-40 border-b border-gold/20 bg-black/80 backdrop-blur-xl">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 grid grid-cols-[1fr_auto_1fr] items-center">
         <Link
           href={backHref}

@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import logo from '@/public/logo-trimmed.png';
+import logo from '@/public/logo-gold.png';
 import { Ornament } from './components/Ornament';
 
 export default function Home() {
@@ -12,12 +12,20 @@ export default function Home() {
       />
 
       <div className="flex flex-col items-center text-center motion-safe:animate-rise">
-        <Image
-          src={logo}
-          alt="Nature's Crunch & Burst"
-          priority
-          className="w-72 sm:w-96 md:w-[30rem] h-auto"
-        />
+        <div className="relative w-72 sm:w-96 md:w-[30rem]">
+          <Image src={logo} alt="Nature's Crunch & Burst" priority className="block w-full h-auto" />
+          {/* Foil glint, masked to the logo's shape */}
+          <span
+            aria-hidden
+            className="pointer-events-none absolute inset-0 bg-[linear-gradient(110deg,transparent_40%,rgb(255_248_228/0.9)_50%,transparent_60%)] bg-size-[250%_100%] bg-position-[150%_0] mix-blend-screen motion-safe:animate-sheen"
+            style={{
+              maskImage: `url(${logo.src})`,
+              WebkitMaskImage: `url(${logo.src})`,
+              maskSize: '100% 100%',
+              WebkitMaskSize: '100% 100%',
+            }}
+          />
+        </div>
         <Ornament className="mt-10 mb-6 w-48 sm:w-64" />
         <p className="text-[11px] sm:text-xs uppercase tracking-[0.4em] text-gold">
           Where taste meets distinction

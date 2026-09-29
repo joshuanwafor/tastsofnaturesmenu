@@ -38,7 +38,11 @@ export const signatureCourses: Record<'starters' | 'mains' | 'desserts', CourseO
   desserts: [
     { name: 'Citrus Parfait', description: 'Layers of citrus cream, vanilla crumble, fresh berries & citrus gel.' },
     { name: 'Warm Berry Compote', description: 'Warm mixed berries with vanilla cream & almond crumble.' },
-    { name: 'Chocolate Indulgence', description: 'Decadent chocolate mousse, chocolate soil & dark chocolate ganache.' },
+    {
+      name: 'Spiced Apple & Mint Cream Cake',
+      description:
+        'Soft cake layered with silky cream, served with cinnamon-spiced apple compote & fresh mint. Available with a sweet red wine infusion on request.',
+    },
   ],
 };
 
@@ -61,8 +65,10 @@ export const walkInMenu: MenuSection[] = [
   {
     title: 'Mains',
     items: [
+      { name: 'Bature Beer Curated Pairing', price: 22500, description: 'Bature craft beer paired with flame-grilled beef skewers, peppers, signature accompaniment & house sauce.' },
       { name: 'Chicken Roulade & Golden Croquette', price: 30000, description: 'Stuffed chicken roulade, crispy potato croquette & creamy herb sauce.' },
       { name: 'Charred Mushroom & Plantain Rice', price: 30000, description: 'Fragrant rice, charred mushrooms, caramelised plantain & roasted vegetables.' },
+      { name: 'Smokey Glazed Chicken Herb Rice', price: 30000, description: 'Char-grilled chicken, fragrant herb rice, rich pepper sauce & toasted sesame.' },
       { name: 'Herb Chicken Linguine', price: 35000, description: 'Grilled chicken, linguine, sautéed peppers & creamy herb sauce.' },
       { name: 'Grilled Beef & Mash', price: 40000, description: 'Grilled beef, creamy mashed potatoes, seasonal vegetables & pepper sauce.' },
       { name: 'Char-Grilled Fish', price: 40000, description: 'Char-grilled fish, herb potatoes, seasonal vegetables & lemon cream sauce.' },
