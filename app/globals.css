@@ -19,6 +19,9 @@
   --animate-rise: rise 1.2s cubic-bezier(0.22, 1, 0.36, 1) both;
   --animate-float: float 3.6s ease-in-out infinite;
   --animate-beacon: beacon 2.8s ease-out infinite;
+  --animate-sweep: sweep 6s linear infinite;
+  --animate-nudge: nudge 1.8s ease-in-out infinite;
+  --animate-sheen: sheen 7s ease-in-out 1.5s infinite;
 
   @keyframes rise {
     from {
@@ -41,6 +44,33 @@
     }
   }
 
+  @keyframes sweep {
+    to {
+      --sweep-angle: 360deg;
+    }
+  }
+
+  /* Glint crosses the logo, then rests off-canvas for the rest of the cycle */
+  @keyframes sheen {
+    0% {
+      background-position: 150% 0;
+    }
+    35%,
+    100% {
+      background-position: -50% 0;
+    }
+  }
+
+  @keyframes nudge {
+    0%,
+    100% {
+      transform: translateX(0);
+    }
+    50% {
+      transform: translateX(5px);
+    }
+  }
+
   @keyframes beacon {
     0% {
       box-shadow: 0 0 0 0 rgb(201 164 92 / 0.45), 0 0 36px rgb(201 164 92 / 0.18);
@@ -50,6 +80,28 @@
       box-shadow: 0 0 0 18px rgb(201 164 92 / 0), 0 0 36px rgb(201 164 92 / 0.18);
     }
   }
+}
+
+/* Registered so the angle can animate; browsers without @property show a static highlight */
+@property --sweep-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+/* 1px border with a gold light that travels around it (animate with motion-safe:animate-sweep).
+   Tune with --sweep-fill (inner background), --sweep-base (resting border) and --sweep-light. */
+@utility sweep-border {
+  border: 1px solid transparent;
+  background:
+    var(--sweep-fill, linear-gradient(#000, #000)) padding-box,
+    conic-gradient(
+        from var(--sweep-angle, 0deg),
+        var(--sweep-base, rgb(255 255 255 / 0.12)) 0% 65%,
+        var(--sweep-light, #c9a45c) 85%,
+        var(--sweep-base, rgb(255 255 255 / 0.12)) 100%
+      )
+      border-box;
 }
 
 @media (prefers-color-scheme: dark) {
